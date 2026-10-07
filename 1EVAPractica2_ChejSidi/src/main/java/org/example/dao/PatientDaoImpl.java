@@ -49,7 +49,6 @@ public class PatientDaoImpl implements PatientDao {
         }
     }
 
-    /** Devuelve el paciente con ese id, o null si no existe. */
     @Override
     public Patient getPatient(int id) {
         String query = "select * from patients where id=?";
@@ -81,7 +80,6 @@ public class PatientDaoImpl implements PatientDao {
         return patients;
     }
 
-    /** Devuelve true si se ha actualizado, false si el paciente no existe o ha fallado. */
     @Override
     public boolean update(Patient patient) {
         if (!patientExists(patient.getId())) {
@@ -102,6 +100,22 @@ public class PatientDaoImpl implements PatientDao {
             e.printStackTrace();
         }
         return filas > 0;
+    }
+
+    @Override
+    public List<Patient> getPatientsByDoctorId(int doctor_id) {
+        String query = "select * from patients where doctor_id=?";
+        List<Patient> patients = new ArrayList<>();
+        try (PreparedStatement ps = DatabaseConnection.getInstance().getConnection().prepareStatement(query)) {
+            ps.setInt(1, doctor_id);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                patients.add(crearPatient(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return patients;
     }
 
     private boolean patientExists(int id) {

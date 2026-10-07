@@ -1,5 +1,7 @@
 package org.example.models;
 
+import java.util.List;
+
 public class Doctor {
     private int id;
     private String name;
@@ -7,9 +9,11 @@ public class Doctor {
     private String dni;
     private double salary;
     private String speciality;
+    private List<Patient> attendedPatients = null;
 
     public Doctor() {
     }
+
     public Doctor(String name, String lastname, String dni, double salary, String speciality) {
         this.name = name;
         this.lastname = lastname;
@@ -75,6 +79,14 @@ public class Doctor {
         this.speciality = speciality;
     }
 
+    public List<Patient> getAttendedPatients() {
+        return attendedPatients;
+    }
+
+    public void setAttendedPatients(List<Patient> attendedPatients) {
+        this.attendedPatients = attendedPatients;
+    }
+
     @Override
     public String toString() {
         return "Doctor{" +
@@ -84,6 +96,7 @@ public class Doctor {
                 ", dni='" + dni + '\'' +
                 ", salary=" + salary +
                 ", speciality='" + speciality + '\'' +
+                ", attendedPatients=" + attendedPatients +
                 '}';
     }
 }

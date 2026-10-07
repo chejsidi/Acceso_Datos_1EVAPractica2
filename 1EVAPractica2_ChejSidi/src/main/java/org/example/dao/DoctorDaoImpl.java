@@ -13,13 +13,10 @@ import java.util.List;
 
 public class DoctorDaoImpl implements DoctorDao {
 
-    /** Inserta el doctor y devuelve el id que le ha asignado la base de datos (-1 si falla). */
     @Override
     public int add(Doctor doctor) {
         String query = "insert into doctors (name, lastname, dni, salary, speciality) values (?, ?, ?, ?, ?)";
         int id = -1;
-        // el PreparedStatement se cierra solo al terminar.
-        // no cierro la conexion porque es el singleton
         try (PreparedStatement ps = DatabaseConnection.getInstance().getConnection()
                 .prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, doctor.getName());
@@ -29,7 +26,7 @@ public class DoctorDaoImpl implements DoctorDao {
             ps.setString(5, doctor.getSpeciality());
             ps.executeUpdate();
 
-            // RETURN_GENERATED_KEYS permite recuperar el id AUTO_INCREMENT generado
+            // recuperar el id AUTO_INCREMENT generado
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
                 id = rs.getInt(1);
@@ -52,7 +49,6 @@ public class DoctorDaoImpl implements DoctorDao {
         }
     }
 
-    /** Devuelve el doctor con ese id, o null si no existe. */
     @Override
     public Doctor getDoctor(int id) {
         String query = "select * from doctors where id=?";
@@ -84,7 +80,6 @@ public class DoctorDaoImpl implements DoctorDao {
         return doctors;
     }
 
-    /** Devuelve true si se ha actualizado, false si el doctor no existe o ha fallado. */
     @Override
     public boolean update(Doctor doctor) {
         if (!doctorExists(doctor.getId())) {
@@ -106,11 +101,28 @@ public class DoctorDaoImpl implements DoctorDao {
         return filas > 0;
     }
 
+    /** Devuelve el doctor que atiende al paciente indicado, o null si no tiene doctor o no existe. */
+    @Override
+    public Doctor getDoctorByPatientId(int patient_id) {
+        // JOIN: une cada paciente con su doctor a través de patients.doctor_id = doctors.id
+        String query = "select d.* from doctors d join patients p on p.doctor_id = d.id where p.id=?";
+        Doctor doctor = null;
+        try (PreparedStatement ps = DatabaseConnection.getInstance().getConnection().prepareStatement(query)) {
+            ps.setInt(1, patient_id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                doctor = crearDoctor(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return doctor;
+    }
+
     private boolean doctorExists(int id) {
         return getDoctor(id) != null;
     }
 
-    /** Convierte la fila actual del ResultSet en un objeto Doctor. */
     private Doctor crearDoctor(ResultSet rs) throws SQLException {
         return new Doctor(rs.getInt("id"),
                 rs.getString("name"),

@@ -10,4 +10,6 @@ public interface DoctorDao {
     Doctor getDoctor(int id);
     List<Doctor> getDoctors();
     boolean update(Doctor doctor);
+    Doctor getDoctorByPatientId(int patient_id);
 }
+
